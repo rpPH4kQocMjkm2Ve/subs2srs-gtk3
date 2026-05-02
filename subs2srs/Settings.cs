@@ -1,4 +1,4 @@
-﻿//  Copyright (C) 2009-2016 Christopher Brochtrup
+//  Copyright (C) 2009-2016 Christopher Brochtrup
 //  Copyright (C) 2026 fkzys (GTK4/.NET 10 port)
 //
 //  This file is part of subs2srs.
@@ -41,6 +41,8 @@ namespace subs2srs
     public const string AudioNormalizeArgs = "/f /q /r /k";
     public const int LongClipWarningSeconds = 10;
     public const int DefaultAudioClipBitrate = 128;
+    public const string DefaultAudioFormat = "Opus";
+    public static readonly string[] AudioFormats = { "Opus", "MP3" };
     public const bool DefaultAudioNormalize = false;
     public const int DefaultVideoClipVideoBitrate = 800;
     public const int DefaultVideoClipAudioBitrate = 128;
@@ -151,7 +153,17 @@ namespace subs2srs
 
     public static string TempImageFilename { get; } = $"subs2srs_temp_{Guid.NewGuid()}.jpg";
     public static string TempVideoFilename { get; } = $"subs2srs_temp_{Guid.NewGuid()}";
-    public static string TempAudioFilename { get; } = $"subs2srs_temp_{Guid.NewGuid()}.mp3";
+    public static string TempAudioFilename { get; } = $"subs2srs_temp_{Guid.NewGuid()}.tmp";
+
+    public static string AudioFilenameFormatWithExt { get; private set; } = PrefDefaults.AudioFilenameFormat;
+    public static string ExtractMediaAudioFilenameFormatWithExt { get; private set; } = PrefDefaults.ExtractMediaAudioFilenameFormat;
+
+    public static void UpdateAudioFilenameFormats()
+    {
+        AudioFilenameFormatWithExt = PrefDefaults.AudioFilenameFormat.Replace(".mp3", $".{Settings.Instance.AudioClips.AudioFormat?.ToLower() ?? "mp3"}");
+        ExtractMediaAudioFilenameFormatWithExt = PrefDefaults.ExtractMediaAudioFilenameFormat.Replace(".mp3", $".{Settings.Instance.AudioClips.AudioFormat?.ToLower() ?? "mp3"}");
+    }
+
     public static string TempAudioPreviewFilename { get; } = $"subs2srs_temp_{Guid.NewGuid()}.wav";
     public static string TempPreviewDirName { get; } = $"subs2srs_preview_{Guid.NewGuid()}";
     public static string TempMkvExtractSubs1Filename { get; } = $"subs2srs_mkv_extract_subs1_{Guid.NewGuid()}";
@@ -261,6 +273,12 @@ namespace subs2srs
     {
         get => Prefs.DefaultAudioClipBitrate;
         set => Prefs.DefaultAudioClipBitrate = value;
+    }
+
+    public static string AudioFormat
+    {
+        get => Prefs.AudioFormat;
+        set => Prefs.AudioFormat = value;
     }
 
     public static bool DefaultAudioNormalize
@@ -811,6 +829,7 @@ namespace subs2srs
     [JsonIgnore]
     public string[] Files { get; set; } = Array.Empty<string>();
 
+    public string AudioFormat { get; set; } = PrefDefaults.DefaultAudioFormat;
     public bool PadEnabled { get; set; }
     public int PadStart { get; set; } = 250;
     public int PadEnd { get; set; } = 250;
@@ -1081,6 +1100,7 @@ namespace subs2srs
       AudioClips = new AudioClips();
       AudioClips.Enabled = ConstantSettings.DefaultEnableAudioClipGeneration;
       AudioClips.Bitrate = ConstantSettings.DefaultAudioClipBitrate;
+      AudioClips.AudioFormat = ConstantSettings.AudioFormat;
       AudioClips.Normalize = ConstantSettings.DefaultAudioNormalize;
 
       Snapshots = new Snapshots();

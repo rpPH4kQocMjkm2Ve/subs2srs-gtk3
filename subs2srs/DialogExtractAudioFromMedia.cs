@@ -53,6 +53,10 @@ namespace subs2srs
         private Gtk.StringList _bitrateModel;
 
         // Format
+        private Gtk.DropDown _comboFormat;
+        private Gtk.StringList _formatModel;
+
+        // Format
         private Gtk.CheckButton _radioSingle, _radioMultiple;
         private Gtk.Entry _txtClipLength;
 
@@ -306,6 +310,11 @@ namespace subs2srs
             _comboBitrate.SetSelected(8); // 128
             bitrateBox.Append(_comboBitrate);
             bitrateBox.Append(Gtk.Label.New("kb/s"));
+            bitrateBox.Append(Gtk.Label.New("format:"));
+            _formatModel = Gtk.StringList.New(PrefDefaults.AudioFormats);
+            _comboFormat = Gtk.DropDown.New(_formatModel, null);
+            _comboFormat.SetSelected(0); // Opus
+            bitrateBox.Append(_comboFormat);
             bitrateFrame.SetChild(bitrateBox);
             topRow.Append(bitrateFrame);
 
@@ -784,8 +793,16 @@ namespace subs2srs
                 string tempMp3 = IOPath.Combine(IOPath.GetTempPath(),
                     ConstantSettings.TempAudioFilename);
 
+                var audioFormat = PrefDefaults.AudioFormats[_comboFormat.GetSelected()];
+                var audioCodec = audioFormat.ToUpper() switch
+                {
+                    "OPUS" => UtilsVideo.AudioCodec.Opus,
+                    "MP3" => UtilsVideo.AudioCodec.MP3,
+                    _ => UtilsVideo.AudioCodec.MP3
+                };
+
                 UtilsAudio.ripAudioFromVideo(file, audioStream.Num,
-                    mediaStartTime, mediaEndTime, bitrate, tempMp3, null);
+                    mediaStartTime, mediaEndTime, bitrate, tempMp3, null, audioCodec);
 
                 if (_cancelRequested) { TryDelete(tempMp3); return false; }
 
@@ -824,7 +841,7 @@ namespace subs2srs
                     name.TotalNumLines = numClips;
 
                     string nameStr = name.createName(
-                        ConstantSettings.ExtractMediaAudioFilenameFormat,
+                        ConstantSettings.ExtractMediaAudioFilenameFormatWithExt,
                         episode + episodeStartNumber - 1, clipIdx + 1,
                         startTimeName, endTimeName, "", "");
 
