@@ -1,9 +1,23 @@
 # Changelog
 
+## 0.2.9
+
+**Bug fixes**:
+- Version displayed as `0.2.8.0` instead of `0.2.8` — .NET 10 SDK emits a 4-component `AssemblyVersion` from the 3-component `<Version>` tag; switched from `Version.ToString()` to `Version.ToString(3)` to suppress the trailing `.Revision`.
+
+**UX**:
+- About dialog: all text labels made selectable (title, version, author, copyright, license, and the GitHub link)
+- About dialog: focus disabled on labels to prevent the initial selection highlight on open
+- About dialog: window height set to auto-size — no more empty space below the content
+- About dialog: OK button pinned to the bottom
+- About dialog: removed duplicate "subs2srs" entry (`UtilsAssembly.Product`)
+
+---
+
 ## 0.2.8
 
 **Bug fixes**:
--Audio preview now respects the selected audio format (Opus/MP3) and the “Use existing audio” setting.
+-Audio preview now respects the selected audio format (Opus/MP3) and the "Use existing audio" setting.
 -Audio preview failures now show a clear error instead of silently doing nothing.
 
 ---
